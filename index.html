@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>TERMINAL_BREACH_V.4</title>
+    <style>
+        body { background-color: #050505; color: #00ff33; font-family: 'Courier New', Courier, monospace; padding: 20px; font-size: 16px; line-height: 1.4; }
+        #terminal { max-width: 800px; margin: 0 auto; }
+        .output { white-space: pre-wrap; margin-bottom: 15px; }
+        .input-line { display: flex; align-items: center; }
+        .prompt { margin-right: 10px; font-weight: bold; }
+        input { background: transparent; border: none; color: #00ff33; font-family: inherit; font-size: inherit; outline: none; flex-grow: 1; }
+        .error { color: #ff3333; }
+        .warning { color: #ffcc00; }
+    </style>
+</head>
+<body>
+<div id="terminal">
+    <div class="output" id="history">SYS_INIT... SUCCESS.
+WARNING: UNSECURED DIRECTORY FOUND AT /root/sys/quarantine/
+Type 'help' for available commands.</div>
+    <div class="input-line">
+        <span class="prompt">guest@mimic_net:~$</span>
+        <input type="text" id="cmd" autofocus autocomplete="off" spellcheck="false">
+    </div>
+</div>
+
+<script>
+    const history = document.getElementById('history');
+    const cmdInput = document.getElementById('cmd');
+    let currentDir = 'home';
+
+    const files = {
+        'home': ['sys_log_04.txt', 'quarantine/'],
+        'quarantine': ['package_omega.dat']
+    };
+
+    cmdInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+            let input = this.value.trim();
+            this.value = '';
+            if (input === '') return;
+            
+            history.innerHTML += `\n<span class="prompt">guest@mimic_net:~$</span> ${input}\n`;
+            processCommand(input);
+            window.scrollTo(0, document.body.scrollHeight);
+        }
+    });
+
+    function processCommand(input) {
+        let parts = input.split(' ');
+        let command = parts[0].toLowerCase();
+        let arg = parts[1];
+
+        switch(command) {
+            case 'help':
+                history.innerHTML += `Available commands:
+  ls          - List files in current directory
+  cd [dir]    - Change directory
+  cat [file]  - Read text file contents
+  clear       - Clear screen\n`;
+                break;
+            case 'ls':
+                if (currentDir === 'home') {
+                    history.innerHTML += `sys_log_04.txt    <span class="warning">quarantine/</span>\n`;
+                } else {
+                    history.innerHTML += `<span class="error">package_omega.dat</span>\n`;
+                }
+                break;
+            case 'cd':
+                if (!arg || arg === '~') {
+                    currentDir = 'home';
+                } else if (arg === 'quarantine' && currentDir === 'home') {
+                    currentDir = 'quarantine';
+                    history.innerHTML += `Entered: /root/sys/quarantine/\n`;
+                } else if (arg === '..' && currentDir === 'quarantine') {
+                    currentDir = 'home';
+                } else {
+                    history.innerHTML += `<span class="error">Directory not found.</span>\n`;
+                }
+                break;
+            case 'cat':
+                if (!arg) {
+                    history.innerHTML += `<span class="error">Usage: cat [filename]</span>\n`;
+                } else if (arg === 'sys_log_04.txt' && currentDir === 'home') {
+                    history.innerHTML += `[LOG START]\nSomething is rewriting the headers. Files are bloating. It's looking back through the terminal. Pull the plug before it grabs package_omega.dat.\n[LOG END]\n`;
+                } else if (arg === 'package_omega.dat' && currentDir === 'quarantine') {
+                    triggerBreach();
+                } else {
+                    history.innerHTML += `<span class="error">File not found or unreadable.</span>\n`;
+                }
+                break;
+            case 'clear':
+                history.innerHTML = '';
+                break;
+            default:
+                history.innerHTML += `<span class="error">Command not recognized: ${command}</span>\n`;
+        }
+    }
+
+    function triggerBreach() {
+        history.innerHTML += `<span class="error">\n!!! CRITICAL SECURITY BREACH !!!</span>\n`;
+        history.innerHTML += `EXTRACTING RAW BINARY STREAM...\n`;
+        history.innerHTML += `TARGET HOST LOCATED. DOWNLOADING ARTIFACT...\n`;
+        
+        // This generates and triggers the raw file download programmatically
+        setTimeout(() => {
+            const hexString = "DEADBEEF0000000000000d0a1a0a0000000d4948445200000032000000320802000000e583c4dd0000001c49444154789cedc10101000000c220fba77f0e3760010000ff9f000d01000165b441310000000049454e44ae426082553239746c6158526f49474e6c62573931626ddf4947b57a63326c754947356c6433516f49484a766233516e";
+            const bytes = new Uint8Array(hexString.match(/.{1,2}/g).map(byte => parseInt(byte, 16)));
+            const blob = new Blob([bytes], {type: "application/octet-stream"});
+            const link = document.createElement('a');
+            link.href = window.URL.createObjectURL(blob);
+            link.download = "package_omega.dat";
+            link.click();
+            
+            history.innerHTML += `<span class="warning">\nCONNECTION SEVERED BY REMOTE HOST.</span>\n`;
+        }, 1500);
+    }
+</script>
+</body>
+</html>
