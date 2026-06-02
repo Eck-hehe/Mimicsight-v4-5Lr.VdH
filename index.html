@@ -1,65 +1,129 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>ARG Terminal</title>
-  <style>
-    body {
-      background: black;
-      color: lime;
-      font-family: monospace;
-      padding: 20px;
-    }
-
-    #output {
-      white-space: pre-wrap;
-      margin-bottom: 10px;
-    }
-
-    input {
-      background: black;
-      color: lime;
-      border: none;
-      outline: none;
-      font-family: monospace;
-      width: 90%;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <title>ARG Terminal</title>
+    <style>
+        body { background: #000000; color: #00ff00; font-family: monospace; padding: 20px; font-size: 16px; line-height: 1.4; }
+        #output { white-space: pre-wrap; margin-bottom: 10px; }
+        .input-line { display: flex; align-items: center; }
+        .prompt { margin-right: 5px; font-weight: bold; }
+        input { background: transparent; color: #00ff00; border: none; outline: none; font-family: monospace; font-size: 16px; flex-grow: 1; }
+        .diagnostic-text { color: #00aaaa; }
+    </style>
 </head>
 <body>
-  <div id="output">
-ARG TERMINAL v1.0
-Type "help" for commands.
+    <div id="output">ARG TERMINAL v1.0
+Type "help" for commands.</div>
+    <div class="input-line">
+        <span class="prompt">&gt;</span>
+        <input id="cmd" autofocus autocomplete="off" spellcheck="false">
+    </div>
 
-  </div>
-
-  > <input id="cmd" autofocus>
-
-  <script>
+<script>
     const output = document.getElementById("output");
     const cmd = document.getElementById("cmd");
 
-    const commands = {
-      help: "Commands:\nhelp\nls\ncat secret.txt",
-      ls: "secret.txt",
-      "cat secret.txt": "FLAG{you_found_the_file}"
-    };
+    // Track mock session start time for diagnostic reporting
+    const sessionStartTime = Date.now();
+
+    document.addEventListener("click", () => cmd.focus());
 
     cmd.addEventListener("keydown", (e) => {
-      if (e.key === "Enter") {
-        const value = cmd.value.trim();
+        if (e.key === "Enter") {
+            const rawInput = cmd.value.trim();
+            cmd.value = "";
+            if (!rawInput) return;
 
-        output.textContent += "\n> " + value + "\n";
+            output.textContent += "\n> " + rawInput + "\n";
 
-        if (commands[value]) {
-          output.textContent += commands[value] + "\n";
-        } else {
-          output.textContent += "Command not found.\n";
+            const parts = rawInput.split(" ");
+            const command = parts[0].toLowerCase();
+            const argument = parts.slice(1).join(" ").toLowerCase();
+
+            switch (command) {
+                case "help":
+                    output.textContent += "Commands:\n" +
+                                          "  help          - List all system diagnostic actions\n" +
+                                          "  ls            - View accessible directory node contents\n" +
+                                          "  cat [file]    - Read contents of a targeted file\n" +
+                                          "  clear         - Wipe terminal history logs\n" +
+                                          "  uptime        - Track system continuous runtime duration\n" +
+                                          "  ping          - Test loopback connection latency\n" +
+                                          "  meminfo       - Display active volatile memory stack allocation\n" +
+                                          "  netstat       - Audit local active system socket profiles\n" +
+                                          "  sysdiagnose   - Run basic node integrity confirmation routines\n";
+                    break;
+
+                case "ls":
+                    output.textContent += "secret.txt\n";
+                    break;
+
+                case "cat":
+                    if (argument === "secret.txt") {
+                        output.textContent += "FLAG{you_found_the_file}\n";
+                    } else if (!argument) {
+                        output.textContent += "Syntax Error: Specify file parameter to read. (Usage: cat secret.txt)\n";
+                    } else {
+                        output.textContent += `File not found: ${parts.slice(1).join(" ")}\n`;
+                    }
+                    break;
+
+                // DIAGNOSTIC 1: UPTIME
+                case "uptime":
+                    const activeSeconds = Math.floor((Date.now() - sessionStartTime) / 1000);
+                    output.textContent += `up ${activeSeconds} seconds, 1 user, load average: 0.04, 0.12, 0.09\n`;
+                    break;
+
+                // DIAGNOSTIC 2: PING
+                case "ping":
+                    output.textContent += "PING 127.0.0.1 (127.0.0.1) 56(84) bytes of data.\n" +
+                                          "64 bytes from 127.0.0.1: icmp_seq=1 ttl=64 time=0.042 ms\n" +
+                                          "64 bytes from 127.0.0.1: icmp_seq=2 ttl=64 time=0.039 ms\n" +
+                                          "--- 127.0.0.1 ping statistics ---\n" +
+                                          "2 packets transmitted, 2 received, 0% packet loss, time 1014ms\n";
+                    break;
+
+                // DIAGNOSTIC 3: MEMINFO
+                case "meminfo":
+                    output.textContent += "MemTotal:        16384220 kB\n" +
+                                          "MemFree:          4122904 kB\n" +
+                                          "MemAvailable:     8912440 kB\n" +
+                                          "Buffers:           210048 kB\n" +
+                                          "Cached:           4811096 kB\n" +
+                                          "SwapTotal:        2097148 kB\n" +
+                                          "SwapFree:         2097148 kB\n";
+                    break;
+
+                // DIAGNOSTIC 4: NETSTAT
+                case "netstat":
+                    output.textContent += "Active Internet connections (only servers)\n" +
+                                          "Proto Recv-Q Send-Q Local Address           Foreign Address         State      \n" +
+                                          "tcp        0      0 127.0.0.1:53            0.0.0.0:*               LISTEN     \n" +
+                                          "tcp        0      0 0.0.0.0:22              0.0.0.0:*               LISTEN     \n" +
+                                          "udp        0      0 127.0.0.53:53           0.0.0.0:*                          \n";
+                    break;
+
+                // DIAGNOSTIC 5: SYSDIAGNOSE
+                case "sysdiagnose":
+                    output.textContent += "Starting base software integrity configuration audit...\n" +
+                                          "[ OK ] File Allocation Table Indexing Mapping\n" +
+                                          "[ OK ] Encryption Core Micro-Kernel Handshake Verification\n" +
+                                          "[ OK ] Ambient Logic Node Temperature Constraints\n" +
+                                          "Diagnostic sequence complete. Zero actionable errors detected.\n";
+                    break;
+
+                case "clear":
+                    output.textContent = "ARG TERMINAL v1.0\nType \"help\" for commands.";
+                    break;
+
+                default:
+                    output.textContent += `Command not recognized: "${command}". Type "help" for guidelines.\n`;
+            }
+
+            window.scrollTo(0, document.body.scrollHeight);
         }
-
-        cmd.value = "";
-        window.scrollTo(0, document.body.scrollHeight);
-      }
     });
-  </script>
+</script>
 </body>
 </html>
