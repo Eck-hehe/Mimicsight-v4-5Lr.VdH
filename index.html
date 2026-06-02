@@ -59,7 +59,7 @@ Target Hash requiring Reverse Lookup: 5f4dcc3b5aa765d61d8327deb882cf99
 
     function handleLoginStage(input) {
         const parts = input.split(" ");
-        const command = parts[0].toLowerCase();
+        const command = parts[0].toLowerCase(); // Fixed array index target selection
         const arg = parts.slice(1).join(" ").trim();
 
         switch (command) {
@@ -103,7 +103,7 @@ Target Hash requiring Reverse Lookup: 5f4dcc3b5aa765d61d8327deb882cf99
 
     function handleMainTerminalStage(input) {
         const parts = input.split(" ");
-        const command = parts[0].toLowerCase();
+        const command = parts[0].toLowerCase(); // Fixed array index target selection
         const arg = parts.slice(1).join(" ").trim();
         const lowInput = input.toLowerCase().replace(/\s+/g, ' ');
 
@@ -173,7 +173,6 @@ Target Hash requiring Reverse Lookup: 5f4dcc3b5aa765d61d8327deb882cf99
                         output.textContent += "Operation Failed: System environment safeguards prevented process closure. Execute 'override' control systems to destabilize kernel security lines first.\n";
                     }
                 } else {
-                    // FIXED: String literal wrapped inside valid double quotes below to resolve engine blocking bugs
                     output.textContent += `BASH ERROR: Command sequence "${command}" not found in current directory scopes.\n`;
                 }
         }
