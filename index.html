@@ -34,8 +34,7 @@ Target Hash requiring Reverse Lookup: 5f4dcc3b5aa765d61d8327deb882cf99
     const cmd = document.getElementById("cmd");
     const promptSym = document.getElementById("prompt-sym");
 
-    // Terminal System States
-    let currentStage = "LOGIN_SCREEN"; // Stages: LOGIN_SCREEN, TERM_SESSION, BYPASSED, FORCE_KILLED
+    let currentStage = "LOGIN_SCREEN"; 
     const sessionStartTime = Date.now();
 
     document.addEventListener("click", () => cmd.focus());
@@ -46,10 +45,8 @@ Target Hash requiring Reverse Lookup: 5f4dcc3b5aa765d61d8327deb882cf99
             cmd.value = "";
             if (!rawInput) return;
 
-            // Output user input back onto the terminal log history
             output.textContent += "\n" + promptSym.textContent + " " + rawInput + "\n";
 
-            // Process logic based on which security stage the terminal is operating inside
             if (currentStage === "LOGIN_SCREEN") {
                 handleLoginStage(rawInput);
             } else {
@@ -60,7 +57,6 @@ Target Hash requiring Reverse Lookup: 5f4dcc3b5aa765d61d8327deb882cf99
         }
     });
 
-    // STAGE 1: HANDLING BREAK-IN AND RAINBOW TABLE ATTACK
     function handleLoginStage(input) {
         const parts = input.split(" ");
         const command = parts[0].toLowerCase();
@@ -82,37 +78,33 @@ Target Hash requiring Reverse Lookup: 5f4dcc3b5aa765d61d8327deb882cf99
 
             case "rainbow_lookup":
                 if (arg === "5f4dcc3b5aa765d61d8327deb882cf99") {
-                    output.textContent += "<span class='warning'>LOADING PARSED RAINBOW TABLES INTO RAM CHIPS...</span>\n" +
+                    output.textContent += "LOADING PARSED RAINBOW TABLES INTO RAM CHIPS...\n" +
                                           "Matching cached passwords against target hash strings...\n" +
                                           "[MATCH FOUND] 5f4dcc3b5aa765d61d8327deb882cf99 ===> password\n" +
-                                          "<span class='success'>Authentication Token isolated. Type the cracked cleartext key into the login prompt to force entry.</span>\n";
+                                          "Authentication Token isolated. Type the cracked cleartext key into the login prompt to force entry.\n";
                 } else if (!arg) {
-                    output.textContent += "<span class='error'>Error: Must supply target MD5 lookup string value parameter.</span>\n";
+                    output.textContent += "Error: Must supply target MD5 lookup string value parameter.\n";
                 } else {
                     output.textContent += "Querying dictionary sets... 0 entries matched your input string hash signature.\n";
                 }
                 break;
 
             case "password":
-                // The correct cleartext answer unlocked via the rainbow lookup database
                 currentStage = "TERM_SESSION";
                 promptSym.textContent = "root@stolen_linux:/#";
-                output.textContent += "<span class='success'>SUCCESS: CREDENTIAL GRANTED. LOADING UNCRYPTED BASH RUNTIME ENVIRONMENT.</span>\n" +
+                output.textContent += "SUCCESS: CREDENTIAL GRANTED. LOADING UNCRYPTED BASH RUNTIME ENVIRONMENT.\n" +
                                       "Type 'help' inside the main environment to discover standard user utility commands.\n";
                 break;
 
             default:
-                output.textContent += "<span class='error'>ACCESS DENIED: Hash matching validation sequence failed. Type 'help' for tools.</span>\n";
+                output.textContent += "ACCESS DENIED: Hash matching validation sequence failed. Type 'help' for tools.\n";
         }
     }
 
-    // STAGES 2 & 3: HANDLING THE OVERRIDE, THE PROCESS KILL, AND FILE RECOVERY
     function handleMainTerminalStage(input) {
         const parts = input.split(" ");
         const command = parts[0].toLowerCase();
         const arg = parts.slice(1).join(" ").trim();
-
-        // Handle composite multicomponent phrase match strings like "pkill -9 terminal" exactly as requested
         const lowInput = input.toLowerCase().replace(/\s+/g, ' ');
 
         switch (command) {
@@ -130,9 +122,9 @@ Target Hash requiring Reverse Lookup: 5f4dcc3b5aa765d61d8327deb882cf99
                 if (currentStage === "TERM_SESSION") {
                     output.textContent += "system_diagnostic_log.txt    firmware_manifest.conf\n";
                 } else if (currentStage === "BYPASSED") {
-                    output.textContent += "system_diagnostic_log.txt    firmware_manifest.conf    <span class='warning'>[LOCKED_CORE_DUMP_STREAM]</span>\n";
+                    output.textContent += "system_diagnostic_log.txt    firmware_manifest.conf    [LOCKED_CORE_DUMP_STREAM]\n";
                 } else if (currentStage === "FORCE_KILLED") {
-                    output.textContent += "<span class='success'>stolen_payload.dat</span>    crash_report.log\n";
+                    output.textContent += "stolen_payload.dat    crash_report.log\n";
                 }
                 break;
 
@@ -141,12 +133,11 @@ Target Hash requiring Reverse Lookup: 5f4dcc3b5aa765d61d8327deb882cf99
                 output.textContent += `up ${activeSeconds} seconds, user level: ROOT, core system strain metrics baseline nominal\n`;
                 break;
 
-            // STAGE 2 COMMAND: FIRMWARE OVERRIDE
             case "override":
                 if (currentStage === "TERM_SESSION") {
                     currentStage = "BYPASSED";
-                    output.textContent += "<span class='warning'>Executing firmware override protocols... DONE.</span>\n" +
-                                          "Kernel Memory Safeguards: <span class='error'>DISABLED</span>\n" +
+                    output.textContent += "Executing firmware override protocols... DONE.\n" +
+                                          "Kernel Memory Safeguards: DISABLED\n" +
                                           "Process tracking logs have opened an active core diagnostic isolation vector channel. Unsafe terminations may leak internal tracking structures. Use 'ls' to audit state changes.\n";
                 } else {
                     output.textContent += "Override controls already deployed or inactive on active loop layer.\n";
@@ -162,17 +153,31 @@ Target Hash requiring Reverse Lookup: 5f4dcc3b5aa765d61d8327deb882cf99
                 if (currentStage === "FORCE_KILLED" && lowArg === "stolen_payload.dat") {
                     output.textContent += "FLAG{sys_killed_memory_dump_recovered_successfully}\n";
                 } else if (!arg) {
-                    output.textContent += "<span class='error'>Syntax Error: Choose file payload parameter argument targets.</span>\n";
+                    output.textContent += "Syntax Error: Choose file payload parameter argument targets.\n";
                 } else {
-                    output.textContent += `<span class='error'>Permission Error: Cannot read file contents. Object descriptors context locked or unreadable.</span>\n`;
+                    output.textContent += "Permission Error: Cannot read file contents. Object descriptors context locked or unreadable.\n";
                 }
                 break;
 
             default:
-                // STAGE 3 COMMAND: PKILL PROCESS FORCE INTRODUCED HERE
                 if (lowInput === "pkill -9 terminal") {
                     if (currentStage === "BYPASSED") {
                         currentStage = "FORCE_KILLED";
                         promptSym.textContent = "emergency_sh_recovery#";
-                        output.textContent += "<span class='error'>\nPANIC: FATAL UNHANDLED KERNEL TERMINATION EXCEPTION REPORTED</span>\n" +
+                        output.textContent += "\nPANIC: FATAL UNHANDLED KERNEL TERMINATION EXCEPTION REPORTED\n" +
                                               "pkill: killing process loop tracking reference [ID: 90911 -> terminal]\n" +
+                                              "Dumping core memory allocations onto tracking channel...\n" +
+                                              "System tracking corrupted. Emergency fallback busybox container shell initialized.\n" +
+                                              "ALERT: Raw flash memory sector tracking has unlinked. 'stolen_payload.dat' extracted onto workspace. Run 'ls' to check files.\n";
+                    } else {
+                        output.textContent += "Operation Failed: System environment safeguards prevented process closure. Execute 'override' control systems to destabilize kernel security lines first.\n";
+                    }
+                } else {
+                    // FIXED: String literal wrapped inside valid double quotes below to resolve engine blocking bugs
+                    output.textContent += `BASH ERROR: Command sequence "${command}" not found in current directory scopes.\n`;
+                }
+        }
+    }
+</script>
+</body>
+</html>
