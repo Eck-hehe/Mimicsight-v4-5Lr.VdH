@@ -2,29 +2,40 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Terminal</title>
+    <title>Stolen Core Linux Node v2.11</title>
     <style>
-        body { background: #000000; color: #00ff00; font-family: monospace; padding: 20px; font-size: 16px; line-height: 1.4; }
+        body { background: #0c0202; color: #33ff33; font-family: 'Courier New', monospace; padding: 20px; font-size: 15px; line-height: 1.4; text-shadow: 0 0 2px #00ff00; }
         #output { white-space: pre-wrap; margin-bottom: 10px; }
         .input-line { display: flex; align-items: center; }
-        .prompt { margin-right: 5px; font-weight: bold; }
-        input { background: transparent; color: #00ff00; border: none; outline: none; font-family: monospace; font-size: 16px; flex-grow: 1; }
-        .diagnostic-text { color: #00aaaa; }
+        .prompt { margin-right: 5px; font-weight: bold; color: #00ff00; }
+        input { background: transparent; color: #33ff33; border: none; outline: none; font-family: inherit; font-size: 15px; flex-grow: 1; text-shadow: 0 0 2px #00ff00; }
+        .error { color: #ff3333; text-shadow: 0 0 2px #ff3333; font-weight: bold; }
+        .warning { color: #ffcc00; text-shadow: 0 0 2px #ffcc00; }
+        .success { color: #00bcff; text-shadow: 0 0 2px #00bcff; }
     </style>
 </head>
 <body>
-    <div id="output">TERMINAL v2.3
-Type "help" for commands.</div>
+    <div id="output">UNAUTHORIZED ACCESS DETECTED.
+======================================================
+CORE LINUX SUBSYSTEM RECOVERY CONSOLE v2.11 (STOLEN_BUILD)
+RESTRICTED FOR INTERNAL SYNTH-TECH PERSONNEL ONLY
+======================================================
+
+systemd-login: Enter root authentication credential hash to decrypt terminal access block.
+Target Hash requiring Reverse Lookup: 5f4dcc3b5aa765d61d8327deb882cf99
+(Tip: Type 'help' to review basic offline rescue commands)</div>
     <div class="input-line">
-        <span class="prompt">&gt;</span>
+        <span id="prompt-sym" class="prompt">root_login_hash:~$</span>
         <input id="cmd" autofocus autocomplete="off" spellcheck="false">
     </div>
 
 <script>
     const output = document.getElementById("output");
     const cmd = document.getElementById("cmd");
+    const promptSym = document.getElementById("prompt-sym");
 
-    // Track mock session start time for diagnostic reporting
+    // Terminal System States
+    let currentStage = "LOGIN_SCREEN"; // Stages: LOGIN_SCREEN, TERM_SESSION, BYPASSED, FORCE_KILLED
     const sessionStartTime = Date.now();
 
     document.addEventListener("click", () => cmd.focus());
@@ -35,95 +46,133 @@ Type "help" for commands.</div>
             cmd.value = "";
             if (!rawInput) return;
 
-            output.textContent += "\n> " + rawInput + "\n";
+            // Output user input back onto the terminal log history
+            output.textContent += "\n" + promptSym.textContent + " " + rawInput + "\n";
 
-            const parts = rawInput.split(" ");
-            const command = parts[0].toLowerCase();
-            const argument = parts.slice(1).join(" ").toLowerCase();
-
-            switch (command) {
-                case "help":
-                    output.textContent += "Commands:\n" +
-                                          "  help          - List all system diagnostic actions\n" +
-                                          "  ls            - View accessible directory node contents\n" +
-                                          "  cat [file]    - Read contents of a targeted file\n" +
-                                          "  clear         - Wipe terminal history logs\n" +
-                                          "  uptime        - Track system continuous runtime duration\n" +
-                                          "  ping          - Test loopback connection latency\n" +
-                                          "  meminfo       - Display active volatile memory stack allocation\n" +
-                                          "  netstat       - Audit local active system socket profiles\n" +
-                                          "  sysdiagnose   - Run basic node integrity confirmation routines\n";
-                    break;
-
-                case "ls":
-                    output.textContent += "secret.txt\n";
-                    break;
-
-                case "cat":
-                    if (argument === "secret.txt") {
-                        output.textContent += "FLAG{you_found_the_file}\n";
-                    } else if (!argument) {
-                        output.textContent += "Syntax Error: Specify file parameter to read. (Usage: cat secret.txt)\n";
-                    } else {
-                        output.textContent += `File not found: ${parts.slice(1).join(" ")}\n`;
-                    }
-                    break;
-
-                // DIAGNOSTIC 1: UPTIME
-                case "uptime":
-                    const activeSeconds = Math.floor((Date.now() - sessionStartTime) / 1000);
-                    output.textContent += `up ${activeSeconds} seconds, 1 user, load average: 0.04, 0.12, 0.09\n`;
-                    break;
-
-                // DIAGNOSTIC 2: PING
-                case "ping":
-                    output.textContent += "PING 127.0.0.1 (127.0.0.1) 56(84) bytes of data.\n" +
-                                          "64 bytes from 127.0.0.1: icmp_seq=1 ttl=64 time=0.042 ms\n" +
-                                          "64 bytes from 127.0.0.1: icmp_seq=2 ttl=64 time=0.039 ms\n" +
-                                          "--- 127.0.0.1 ping statistics ---\n" +
-                                          "2 packets transmitted, 2 received, 0% packet loss, time 1014ms\n";
-                    break;
-
-                // DIAGNOSTIC 3: MEMINFO
-                case "meminfo":
-                    output.textContent += "MemTotal:        16384220 kB\n" +
-                                          "MemFree:          4122904 kB\n" +
-                                          "MemAvailable:     8912440 kB\n" +
-                                          "Buffers:           210048 kB\n" +
-                                          "Cached:           4811096 kB\n" +
-                                          "SwapTotal:        2097148 kB\n" +
-                                          "SwapFree:         2097148 kB\n";
-                    break;
-
-                // DIAGNOSTIC 4: NETSTAT
-                case "netstat":
-                    output.textContent += "Active Internet connections (only servers)\n" +
-                                          "Proto Recv-Q Send-Q Local Address           Foreign Address         State      \n" +
-                                          "tcp        0      0 127.0.0.1:53            0.0.0.0:*               LISTEN     \n" +
-                                          "tcp        0      0 0.0.0.0:22              0.0.0.0:*               LISTEN     \n" +
-                                          "udp        0      0 127.0.0.53:53           0.0.0.0:*                          \n";
-                    break;
-
-                // DIAGNOSTIC 5: SYSDIAGNOSE
-                case "sysdiagnose":
-                    output.textContent += "Starting base software integrity configuration audit...\n" +
-                                          "[ OK ] File Allocation Table Indexing Mapping\n" +
-                                          "[ OK ] Encryption Core Micro-Kernel Handshake Verification\n" +
-                                          "[ OK ] Ambient Logic Node Temperature Constraints\n" +
-                                          "Diagnostic sequence complete. Zero actionable errors detected.\n";
-                    break;
-
-                case "clear":
-                    output.textContent = "TERMINAL v2.3\nType \"help\" for commands.";
-                    break;
-
-                default:
-                    output.textContent += `Command not recognized: "${command}". Type "help" for guidelines.\n`;
+            // Process logic based on which security stage the terminal is operating inside
+            if (currentStage === "LOGIN_SCREEN") {
+                handleLoginStage(rawInput);
+            } else {
+                handleMainTerminalStage(rawInput);
             }
 
             window.scrollTo(0, document.body.scrollHeight);
         }
     });
-</script>
-</body>
-</html>
+
+    // STAGE 1: HANDLING BREAK-IN AND RAINBOW TABLE ATTACK
+    function handleLoginStage(input) {
+        const parts = input.split(" ");
+        const command = parts[0].toLowerCase();
+        const arg = parts.slice(1).join(" ").trim();
+
+        switch (command) {
+            case "help":
+                output.textContent += "System Locked. Emergency Recovery Sub-Modules Available:\n" +
+                                      "  help                       - View rescue options\n" +
+                                      "  sysinfo                    - View architecture hardware properties\n" +
+                                      "  rainbow_lookup [hash]      - Run basic local dictionary reverse crypt-lookup\n";
+                break;
+
+            case "sysinfo":
+                output.textContent += "KERNEL: Linux version 4.19.0-stolen-build (gcc version 8.3.0)\n" +
+                                      "HOSTNAME: STN-4-RECOVERY-NODE\n" +
+                                      "LOCK STATUS: ACCESS_RESTRICTED_BY_AUTHENTICATION_HASH\n";
+                break;
+
+            case "rainbow_lookup":
+                if (arg === "5f4dcc3b5aa765d61d8327deb882cf99") {
+                    output.textContent += "<span class='warning'>LOADING PARSED RAINBOW TABLES INTO RAM CHIPS...</span>\n" +
+                                          "Matching cached passwords against target hash strings...\n" +
+                                          "[MATCH FOUND] 5f4dcc3b5aa765d61d8327deb882cf99 ===> password\n" +
+                                          "<span class='success'>Authentication Token isolated. Type the cracked cleartext key into the login prompt to force entry.</span>\n";
+                } else if (!arg) {
+                    output.textContent += "<span class='error'>Error: Must supply target MD5 lookup string value parameter.</span>\n";
+                } else {
+                    output.textContent += "Querying dictionary sets... 0 entries matched your input string hash signature.\n";
+                }
+                break;
+
+            case "password":
+                // The correct cleartext answer unlocked via the rainbow lookup database
+                currentStage = "TERM_SESSION";
+                promptSym.textContent = "root@stolen_linux:/#";
+                output.textContent += "<span class='success'>SUCCESS: CREDENTIAL GRANTED. LOADING UNCRYPTED BASH RUNTIME ENVIRONMENT.</span>\n" +
+                                      "Type 'help' inside the main environment to discover standard user utility commands.\n";
+                break;
+
+            default:
+                output.textContent += "<span class='error'>ACCESS DENIED: Hash matching validation sequence failed. Type 'help' for tools.</span>\n";
+        }
+    }
+
+    // STAGES 2 & 3: HANDLING THE OVERRIDE, THE PROCESS KILL, AND FILE RECOVERY
+    function handleMainTerminalStage(input) {
+        const parts = input.split(" ");
+        const command = parts[0].toLowerCase();
+        const arg = parts.slice(1).join(" ").trim();
+
+        // Handle composite multicomponent phrase match strings like "pkill -9 terminal" exactly as requested
+        const lowInput = input.toLowerCase().replace(/\s+/g, ' ');
+
+        switch (command) {
+            case "help":
+                output.textContent += "Stolen Environment Console Controls:\n" +
+                                      "  help                       - Show baseline operational operations directory\n" +
+                                      "  ls                         - Enumerate file catalog entries within structural path\n" +
+                                      "  uptime                     - View current loop uptime timeline values\n" +
+                                      "  clear                      - Wipe interface visual history rows\n" +
+                                      "  override                   - Execute low-level system configuration safety alterations\n" +
+                                      "  pkill -9 terminal          - Unsafe lethal kill process loop target execution command\n";
+                break;
+
+            case "ls":
+                if (currentStage === "TERM_SESSION") {
+                    output.textContent += "system_diagnostic_log.txt    firmware_manifest.conf\n";
+                } else if (currentStage === "BYPASSED") {
+                    output.textContent += "system_diagnostic_log.txt    firmware_manifest.conf    <span class='warning'>[LOCKED_CORE_DUMP_STREAM]</span>\n";
+                } else if (currentStage === "FORCE_KILLED") {
+                    output.textContent += "<span class='success'>stolen_payload.dat</span>    crash_report.log\n";
+                }
+                break;
+
+            case "uptime":
+                const activeSeconds = Math.floor((Date.now() - sessionStartTime) / 1000);
+                output.textContent += `up ${activeSeconds} seconds, user level: ROOT, core system strain metrics baseline nominal\n`;
+                break;
+
+            // STAGE 2 COMMAND: FIRMWARE OVERRIDE
+            case "override":
+                if (currentStage === "TERM_SESSION") {
+                    currentStage = "BYPASSED";
+                    output.textContent += "<span class='warning'>Executing firmware override protocols... DONE.</span>\n" +
+                                          "Kernel Memory Safeguards: <span class='error'>DISABLED</span>\n" +
+                                          "Process tracking logs have opened an active core diagnostic isolation vector channel. Unsafe terminations may leak internal tracking structures. Use 'ls' to audit state changes.\n";
+                } else {
+                    output.textContent += "Override controls already deployed or inactive on active loop layer.\n";
+                }
+                break;
+
+            case "clear":
+                output.textContent = "CORE LINUX SUBSYSTEM RECOVERY CONSOLE v2.11 (STOLEN_BUILD)";
+                break;
+
+            case "cat":
+                let lowArg = arg.toLowerCase();
+                if (currentStage === "FORCE_KILLED" && lowArg === "stolen_payload.dat") {
+                    output.textContent += "FLAG{sys_killed_memory_dump_recovered_successfully}\n";
+                } else if (!arg) {
+                    output.textContent += "<span class='error'>Syntax Error: Choose file payload parameter argument targets.</span>\n";
+                } else {
+                    output.textContent += `<span class='error'>Permission Error: Cannot read file contents. Object descriptors context locked or unreadable.</span>\n`;
+                }
+                break;
+
+            default:
+                // STAGE 3 COMMAND: PKILL PROCESS FORCE INTRODUCED HERE
+                if (lowInput === "pkill -9 terminal") {
+                    if (currentStage === "BYPASSED") {
+                        currentStage = "FORCE_KILLED";
+                        promptSym.textContent = "emergency_sh_recovery#";
+                        output.textContent += "<span class='error'>\nPANIC: FATAL UNHANDLED KERNEL TERMINATION EXCEPTION REPORTED</span>\n" +
+                                              "pkill: killing process loop tracking reference [ID: 90911 -> terminal]\n" +
