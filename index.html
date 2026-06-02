@@ -1,189 +1,65 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <title>SECURE_NODE_099</title>
-    <style>
-        body { background-color: #030303; color: #00ff33; font-family: 'Courier New', Courier, monospace; padding: 25px; font-size: 15px; line-height: 1.5; text-shadow: 0 0 2px #00ff33; }
-        #terminal { max-width: 900px; margin: 0 auto; }
-        .output { white-space: pre-wrap; margin-bottom: 15px; }
-        .input-line { display: flex; align-items: center; }
-        .prompt { margin-right: 10px; font-weight: bold; color: #00cc22; }
-        input { background: transparent; border: none; color: #00ff33; font-family: inherit; font-size: inherit; outline: none; flex-grow: 1; text-shadow: 0 0 2px #00ff33; }
-        .error { color: #ff3333; text-shadow: 0 0 2px #ff3333; font-weight: bold; }
-        .warning { color: #ffcc00; text-shadow: 0 0 2px #ffcc00; }
-        .secret { color: #00bcff; text-shadow: 0 0 2px #00bcff; }
-    </style>
+  <title>ARG Terminal</title>
+  <style>
+    body {
+      background: black;
+      color: lime;
+      font-family: monospace;
+      padding: 20px;
+    }
+
+    #output {
+      white-space: pre-wrap;
+      margin-bottom: 10px;
+    }
+
+    input {
+      background: black;
+      color: lime;
+      border: none;
+      outline: none;
+      font-family: monospace;
+      width: 90%;
+    }
+  </style>
 </head>
 <body>
-<div id="terminal">
-    <div class="output" id="history">CONNECTING TO NODE_099... SUCCESS.
-DECRYPTING FILE SYSTEM PROTOCOLS... DONE.
-STATUS: CRITICAL EXPOSURE DETECTED.
+  <div id="output">
+ARG TERMINAL v1.0
+Type "help" for commands.
 
-Type 'help' to view the primary commands.</div>
-    <div class="input-line">
-        <span class="prompt">operator@mimic_node_099:~$</span>
-        <input type="text" id="cmd" autofocus autocomplete="off" spellcheck="false">
-    </div>
-</div>
+  </div>
 
-<script>
-    const history = document.getElementById('history');
-    const cmdInput = document.getElementById('cmd');
-    
-    // Directory & Security State Tracking
-    let currentDir = 'root'; 
-    let systemLocked = true;
-    let logOneHacked = false; // New state tracking for the hack
+  > <input id="cmd" autofocus>
 
-    // Custom Response Messages
-    const systemLogs = {
-        'log_01.txt': `[TIMESTAMP: 04:12] - Security perimeter breached at station 4. They aren't trying to steal the data. They are altering the file extensions. Everything is becoming corrupted.`,
-        'log_02.txt': `[TIMESTAMP: 11:45] - Note to self: If the primary file lock engages, the backdoor bypass code is 'OVERRIDE'. Write it down before they wipe the memory cache.`,
-        'diary.db': `ERROR: DATABASE ENCRYPTED. \nTo read this database, type command: 'decrypt diary.db'`
+  <script>
+    const output = document.getElementById("output");
+    const cmd = document.getElementById("cmd");
+
+    const commands = {
+      help: "Commands:\nhelp\nls\ncat secret.txt",
+      ls: "secret.txt",
+      "cat secret.txt": "FLAG{you_found_the_file}"
     };
 
-    cmdInput.addEventListener('keydown', function(e) {
-        if (e.key === 'Enter') {
-            let input = this.value.trim();
-            this.value = '';
-            if (input === '') return;
-            
-            history.innerHTML += `\n<span class="prompt">operator@mimic_node_099:~$</span> ${input}\n`;
-            processCommand(input);
-            window.scrollTo(0, document.body.scrollHeight);
+    cmd.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        const value = cmd.value.trim();
+
+        output.textContent += "\n> " + value + "\n";
+
+        if (commands[value]) {
+          output.textContent += commands[value] + "\n";
+        } else {
+          output.textContent += "Command not found.\n";
         }
+
+        cmd.value = "";
+        window.scrollTo(0, document.body.scrollHeight);
+      }
     });
-
-    function processCommand(input) {
-        let parts = input.split(' ');
-        let command = parts.toLowerCase();
-        let arg = parts.slice(1).join(' ');
-
-        switch(command) {
-            // 1. HELP COMMAND
-            case 'help':
-                history.innerHTML += `=======================================================
-AVAILABLE COMMANDS:
-  ls                  - List files inside the current directory
-  cd [directory]      - Move into a specific directory folder
-  cat [filename]      - Read the text contents of a file
-  scan                - Perform a deep network security scan
-  hack [port]         - Exploit an open port to bypass file locks
-  sysinfo             - Display system hardware and node properties
-  whoami              - Display current console user privilege level
-  decrypt [filename]  - Attempt cryptographic decryption on a file
-  bypass [code]       - Input security manual override passphrase
-  logs                - Review historical network event notifications
-  status              - Check environment security integrity status
-  clear               - Flush the terminal interface history lines
-  download            - Force pull package_omega.dat archive
-=======================================================\n`;
-                break;
-
-            // 2. LS COMMAND
-            case 'ls':
-                if (currentDir === 'root') {
-                    // Visual marker showing log_01 is locked until hacked
-                    let log1Name = logOneHacked ? 'log_01.txt' : '<span class="error">[LOCKED_log_01.txt]</span>';
-                    history.innerHTML += `${log1Name}    log_02.txt    diary.db    <span class="warning">secure_vault/</span>\n`;
-                } else if (currentDir === 'vault') {
-                    if (systemLocked) {
-                        history.innerHTML += `<span class="error">ACCESS DENIED: Directory 'secure_vault/' is locked by firewall. Use 'bypass [code]' to open.</span>\n`;
-                    } else {
-                        history.innerHTML += `<span class="secret">package_omega.dat</span>    vault_notes.txt\n`;
-                    }
-                }
-                break;
-
-            // 3. CD COMMAND
-            case 'cd':
-                if (!arg || arg === '~' || arg === 'root') {
-                    currentDir = 'root';
-                    history.innerHTML += `Returned to: /root/\n`;
-                } else if (arg === 'secure_vault') {
-                    currentDir = 'vault';
-                    if (systemLocked) {
-                        history.innerHTML += `<span class="warning">Warning: Directory is heavily encrypted. Console features limited until bypass.</span>\n`;
-                    } else {
-                        history.innerHTML += `Entered: /root/secure_vault/\n`;
-                    }
-                } else if (arg === '..') {
-                    currentDir = 'root';
-                    history.innerHTML += `Returned to: /root/\n`;
-                } else {
-                    history.innerHTML += `<span class="error">Directory path not found: ${arg}</span>\n`;
-                }
-                break;
-
-            // 4. CAT COMMAND
-            case 'cat':
-                if (!arg) {
-                    history.innerHTML += `<span class="error">Syntax Error: Choose a file (e.g., cat log_02.txt)</span>\n`;
-                } else if (currentDir === 'root' && arg === 'log_01.txt') {
-                    if (!logOneHacked) {
-                        history.innerHTML += `<span class="error">SECURITY ERROR: access to log_01.txt is restricted. \nPort 443 firewall isolation active. Run 'scan' to analyze system weaknesses.</span>\n`;
-                    } else {
-                        history.innerHTML += `${systemLogs[arg]}\n`;
-                    }
-                } else if (currentDir === 'root' && systemLogs[arg]) {
-                    history.innerHTML += `${systemLogs[arg]}\n`;
-                } else if (currentDir === 'vault' && !systemLocked && arg === 'vault_notes.txt') {
-                    history.innerHTML += `[SECURE STORAGE NOTE]\nIf you are reading this, the extraction went smoothly. The payload 'package_omega.dat' has broken headers to prevent automated network bots from scanning it. You must fix it by hand.\n`;
-                } else if (currentDir === 'vault' && !systemLocked && arg === 'package_omega.dat') {
-                    triggerBreach();
-                } else {
-                    history.innerHTML += `<span class="error">File not found, directory mismatch, or file locked.</span>\n`;
-                }
-                break;
-
-            // 5. SCAN COMMAND
-            case 'scan':
-                history.innerHTML += `<span class="warning">INITIALIZING DEEP PACKET SCAN...</span>\n`;
-                setTimeout(() => { history.innerHTML += `Scanning local network layers... Done.\n`; }, 300);
-                setTimeout(() => { 
-                    history.innerHTML += `VULNERABILITY REVEALED:\n`; 
-                    history.innerHTML += `-> <span class="error">Port 443</span> is running an obsolete handshake protocol.\n`;
-                    history.innerHTML += `-> Command terminal exploit vector available: 'hack 443'\n`;
-                }, 800);
-                break;
-
-            // NEW: 6. HACK COMMAND
-            case 'hack':
-                if (arg === '443') {
-                    history.innerHTML += `<span class="warning">INJECTING EXPLOIT PAYLOAD INTO PORT 443...</span>\n`;
-                    let progress = 0;
-                    cmdInput.disabled = true; // Briefly disable terminal input to simulate hacking load time
-                    
-                    let interval = setInterval(() => {
-                        progress += 25;
-                        history.innerHTML += `Bypassing firewall defense matrices... ${progress}%\n`;
-                        window.scrollTo(0, document.body.scrollHeight);
-                        
-                        if (progress >= 100) {
-                            clearInterval(interval);
-                            logOneHacked = true;
-                            cmdInput.disabled = false;
-                            cmdInput.focus();
-                            history.innerHTML += `<span class="secret">\n[SUCCESS] PORT 443 EXPLOITED.\nSecurity lock on log_01.txt has been permanently dropped.\nType 'cat log_01.txt' to extract records.</span>\n`;
-                            window.scrollTo(0, document.body.scrollHeight);
-                        }
-                    }, 500);
-                } else if (!arg) {
-                    history.innerHTML += `<span class="error">Error: Please specify a targeted network port. (e.g., hack 80)</span>\n`;
-                } else {
-                    history.innerHTML += `<span class="error">HACK FAILED: Port ${arg} is heavily guarded. Exploit packet dropped by hostile host.</span>\n`;
-                }
-                break;
-
-            // 7. SYSINFO COMMAND
-            case 'sysinfo':
-                history.innerHTML += `SYSTEM DATA RESOURCE PROFILE:
-----------------------------------------
-HOST NODE:    MIMIC_PROXY_SERVER_099
-OS VERSION:   CORE_OS v4.11.9
-SECURITY:     AES-256 DEGRADED BITRATE
-PORT STATUS:  PORT 80 (CLOSED), PORT 443 (UNSTABLE)
-PROCESSORS:   8x DIGITAL AUDIO EMULATION MATRIX\n`;
-history.innerHTML += <span class="error">CRITICAL FAILURE: Cannot download target artifact. You must navigate into 'secure_vault' and unlock it first.</span>\n;}break;case 'clear':history.innerHTML = '';break;default:history.innerHTML += <span class="error">Unknown Command: '${command}'. Type 'help' for configuration list.</span>\n;}}function triggerBreach() {history.innerHTML += <span class="error">\n!!! CRITICAL SECURITY BREACH LOGGED !!!</span>\n;history.innerHTML += EXTRACTING RAW BINARY ARTIFACT DATA STREAM...\n;history.innerHTML += ESTABLISHING TARGET DOWNLINK FOR PACKAGE_OMEGA...\n;setTimeout(() => {const hexString = "DEADBEEF0000000000000d0a1a0a0000000d4948445200000032000000320802000000e583c4dd0000001c49444154789cedc10101000000c220fba77f0e3760010000ff9f000d01000165b441310000000049454e44ae426082553239746c6158526f49474e6c62573931626ddf4947b57a63326c754947356c6433516f49484a766233516e";const bytes = new Uint8Array(hexString.match(/.{1,2}/g).map(byte => parseInt(byte, 16)));const blob = new Blob([bytes], {type: "application/octet-stream"});const link = document.createElement('a');link.href = window.URL.createObjectURL(blob);link.download = "package_omega.dat";link.click();history.innerHTML += <span class="warning">\nDOWNLOAD TRIGGERED. INTERFACE DEGRADED. SAFE DISCONNECT IMMINENT.</span>\n;}, 1500);}
+  </script>
+</body>
+</html>
