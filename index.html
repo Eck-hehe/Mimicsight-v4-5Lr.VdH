@@ -6,6 +6,7 @@
     <style>
         body { background: #0c0202; color: #33ff33; font-family: 'Courier New', monospace; padding: 20px; font-size: 15px; line-height: 1.4; text-shadow: 0 0 2px #00ff00; }
         #output { white-space: pre-wrap; margin-bottom: 10px; }
+        #ascii-art { white-space: pre; margin-bottom: 10px; color: #33ff33; }
         .input-line { display: flex; align-items: center; }
         .prompt { margin-right: 5px; font-weight: bold; color: #00ff00; }
         input { background: transparent; color: #33ff33; border: none; outline: none; font-family: inherit; font-size: 15px; flex-grow: 1; text-shadow: 0 0 2px #00ff00; }
@@ -15,15 +16,10 @@
     </style>
 </head>
 <body>
-    <div id="output">UNAUTHORIZED ACCESS DETECTED.
-======================================================
-CORE LINUX SUBSYSTEM RECOVERY CONSOLE v2.11 (STOLEN_BUILD)
-RESTRICTED FOR INTERNAL SYNTH-TECH PERSONNEL ONLY
-======================================================
-
-systemd-login: Enter root authentication credential hash to decrypt terminal access block.
-Target Hash requiring Reverse Lookup: 5f4dcc3b5aa765d61d8327deb882cf99
-(Tip: Type 'help' to review basic offline rescue commands)</div>
+    <div id="output"><div id="ascii-art"></div>
+root@recovery:~# Access restricted - authentication required.
+███████████████████████████████████████████████████████████
+Property of ANS</div>
     <div class="input-line">
         <span id="prompt-sym" class="prompt">root_login_hash:~$</span>
         <input id="cmd" autofocus autocomplete="off" spellcheck="false">
@@ -33,8 +29,49 @@ Target Hash requiring Reverse Lookup: 5f4dcc3b5aa765d61d8327deb882cf99
     const output = document.getElementById("output");
     const cmd = document.getElementById("cmd");
     const promptSym = document.getElementById("prompt-sym");
+    const asciiArt = document.getElementById("ascii-art");
 
+    function setAsciiArt(value) {
+        asciiArt.textContent = value;
+    }
+
+    const originalAsciiArt = [
+        "   _   _  ___  _   _  ____  _   _  _____  _____  _____",
+        "  | \\ | |/ _ \\| \\ | |/ __ \\| \\ | |/ ____|/ ____|/ ____|",
+        "  |  \\| | | | |  \\| | |  | |  \\| | (___ | |  __| (___  ",
+        "  | . ` | | | | . ` | |  | | . ` |\\___ \\| | |_ |\\___ \\",
+        "  | |\\  | |_| | |\\  | |__| | |\\  |____) | |__| |____) |",
+        "  |_| \\_|\\___/|_| \\_|\\____/|_| \\_|_____/ \\_____|_____/ "
+    ].join("\n");
+
+    const usMapAsciiArt = `
+          ,__                                                  _,
+  \\~\\|  ~~---___              ,                          | \\
+   | Wash./ |   ~~~~~~~|~~~~~| ~~---,                VT_/,ME>
+  /~-_--__| |  Montana |N Dak\\ Minn/ ~\\~~/Mich.     /~| ||,'
+  |Oregon /  \\         |------|   { WI / /~)     __-NY',|_\\,NH
+ /       |Ida.|~~~~~~~~|S Dak.\\    \\   | | '~\\  |_____,|~,-'Mass.
+ |~~--__ |    | Wyoming|____  |~~~~~|--| |__ /_-'Penn.{,~Conn (RI)
+ |   |  ~~~|~~|        |    ~~\\ Iowa/  \`-' |~\` |~_____{/NJ
+ |   |     |  '---------, Nebr.\\----| IL|IN|OH,' ~/~\\,|~MD (DE)
+ ',  \\ Nev.|Utah| Colo. |~~~~~~~|    \\  | ,'~~\\WV/ VA |
+  |Cal\\    |    |       | Kansas| MO  \\_-~ KY /\`~___--\\
+  ',   \\  ,-----|-------+-------'_____/__----~~/N Car./
+   '_   '\\|     |      |~~~|Okla.|    | Tenn._/-,~~-,/
+     \\    |Ariz.| New  |   |_    |Ark./~~|~~\\    \\,/S Car.
+      ~~~-'     | Mex. |     \`~~~\\___|MS |AL | GA /
+          '-,_  | _____|          |  /   | ,-'---~\\
+              \`~'~  \\    Texas    |LA\`--,~~~~-~~,FL\\
+                     \\/~\\      /~~~\`---\`         |  \\
+                         \\    /                   \\  |
+                          \\  |                     '\\
+                           \`~'
+    `.trim();
+    setAsciiArt(usMapAsciiArt);
+    
     let currentStage = "LOGIN_SCREEN"; 
+    let rainbowTableCracked = true;
+    let awaitingPassword = false;
     const sessionStartTime = Date.now();
 
     document.addEventListener("click", () => cmd.focus());
@@ -47,7 +84,9 @@ Target Hash requiring Reverse Lookup: 5f4dcc3b5aa765d61d8327deb882cf99
 
             output.textContent += "\n" + promptSym.textContent + " " + rawInput + "\n";
 
-            if (currentStage === "LOGIN_SCREEN") {
+            if (awaitingPassword) {
+                handlePasswordInput(rawInput);
+            } else if (currentStage === "LOGIN_SCREEN") {
                 handleLoginStage(rawInput);
             } else {
                 handleMainTerminalStage(rawInput);
@@ -64,40 +103,44 @@ Target Hash requiring Reverse Lookup: 5f4dcc3b5aa765d61d8327deb882cf99
 
         switch (command) {
             case "help":
-                output.textContent += "System Locked. Emergency Recovery Sub-Modules Available:\n" +
-                                      "  help                       - View rescue options\n" +
-                                      "  sysinfo                    - View architecture hardware properties\n" +
-                                      "  rainbow_lookup [hash]      - Run basic local dictionary reverse crypt-lookup\n";
+                output.textContent += "Available commands:\n" +
+                                      "  help                - Show this help\n" +
+                                      "  sysinfo             - System information\n" +
+                                      "  login [password]    - Attempt login\n";
                 break;
 
             case "sysinfo":
-                output.textContent += "KERNEL: Linux version 4.19.0-stolen-build (gcc version 8.3.0)\n" +
-                                      "HOSTNAME: STN-4-RECOVERY-NODE\n" +
-                                      "LOCK STATUS: ACCESS_RESTRICTED_BY_AUTHENTICATION_HASH\n";
+                output.textContent += "Linux recovery kernel 4.19.0\n" +
+                                      "Hostname: recovery\n" +
+                                      "Status: Locked (authentication required)\n";
                 break;
 
-            case "rainbow_lookup":
-                if (arg === "5f4dcc3b5aa765d61d8327deb882cf99") {
-                    output.textContent += "LOADING PARSED RAINBOW TABLES INTO RAM CHIPS...\n" +
-                                          "Matching cached passwords against target hash strings...\n" +
-                                          "[MATCH FOUND] 5f4dcc3b5aa765d61d8327deb882cf99 ===> password\n" +
-                                          "Authentication Token isolated. Type the cracked cleartext key into the login prompt to force entry.\n";
-                } else if (!arg) {
-                    output.textContent += "Error: Must supply target MD5 lookup string value parameter.\n";
+            case "login":
+                if (!rainbowTableCracked) {
+                    output.textContent += "Access denied.\n";
                 } else {
-                    output.textContent += "Querying dictionary sets... 0 entries matched your input string hash signature.\n";
+                    awaitingPassword = true;
+                    output.textContent += "Password: ";
+                    promptSym.textContent = "";
                 }
                 break;
 
-            case "password":
-                currentStage = "TERM_SESSION";
-                promptSym.textContent = "root@stolen_linux:/#";
-                output.textContent += "SUCCESS: CREDENTIAL GRANTED. LOADING UNCRYPTED BASH RUNTIME ENVIRONMENT.\n" +
-                                      "Type 'help' inside the main environment to discover standard user utility commands.\n";
-                break;
-
             default:
-                output.textContent += "ACCESS DENIED: Hash matching validation sequence failed. Type 'help' for tools.\n";
+                output.textContent += "command not found\n";
+        }
+    }
+
+    function handlePasswordInput(input) {
+        if (input === "1qaz2wsx") {
+            currentStage = "TERM_SESSION";
+            awaitingPassword = false;
+            rainbowTableCracked = false;
+            promptSym.textContent = "root@recovery:~# ";
+            output.textContent += "Access granted.\n";
+        } else {
+            output.textContent += "Access denied.\n";
+            awaitingPassword = false;
+            promptSym.textContent = "root@recovery:~# ";
         }
     }
 
@@ -115,7 +158,7 @@ Target Hash requiring Reverse Lookup: 5f4dcc3b5aa765d61d8327deb882cf99
                                       "  uptime                     - View current loop uptime timeline values\n" +
                                       "  clear                      - Wipe interface visual history rows\n" +
                                       "  override                   - Execute low-level system configuration safety alterations\n" +
-                                      "  pkill -9 terminal          - Unsafe lethal kill process loop target execution command\n";
+                                      "  pkill -9               - Unsafe lethal kill process loop target execution command\n";
                 break;
 
             case "ls":
@@ -160,12 +203,12 @@ Target Hash requiring Reverse Lookup: 5f4dcc3b5aa765d61d8327deb882cf99
                 break;
 
             default:
-                if (lowInput === "pkill -9 terminal") {
+                if (lowInput === "pkill -9") {
                     if (currentStage === "BYPASSED") {
                         currentStage = "FORCE_KILLED";
                         promptSym.textContent = "emergency_sh_recovery#";
                         output.textContent += "\nPANIC: FATAL UNHANDLED KERNEL TERMINATION EXCEPTION REPORTED\n" +
-                                              "pkill: killing process loop tracking reference [ID: 90911 -> terminal]\n" +
+                                              "pkill: killing process loop tracking reference [ID: 90911]\n" +
                                               "Dumping core memory allocations onto tracking channel...\n" +
                                               "System tracking corrupted. Emergency fallback busybox container shell initialized.\n" +
                                               "ALERT: Raw flash memory sector tracking has unlinked. 'stolen_payload.dat' extracted onto workspace. Run 'ls' to check files.\n";
